@@ -10,7 +10,7 @@ import java.net.MalformedURLException
 import java.net.URL
 
 object ApiManager {
-   private const val TAG = "com.example.willr356.openweather.ApiManager"
+   private const val TAG = "ApiManager"
    private const val API_KEY = "19f3120e16de2d5fa436c6b17b4a388f"
    private const val weatherUrl = "https://api.openweathermap.org/data/2.5/weather"
 
@@ -36,6 +36,7 @@ object ApiManager {
 
         val jsonObject = JSONObject(sb.toString())
         val weather = Weather(jsonObject)
+        WeatherRepository.saveWeather(weather)
       }
     } catch (me: MalformedURLException) {
       Log.d(TAG, "Malformed URL")
