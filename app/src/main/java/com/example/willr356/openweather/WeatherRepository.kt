@@ -11,4 +11,8 @@ object WeatherRepository {
   fun getWeather(): Weather? {
     return weather
   }
+
+  fun getImageCode(): String {
+    return weather?.icon.orEmpty()
+  }
 }

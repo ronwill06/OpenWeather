@@ -10,7 +10,7 @@
       android:id="@+id/weather_image_view"
       android:layout_width="200dp"
       android:layout_height="200dp"
-      android:layout_centerVertical="true"
+      android:layout_centerInParent="true"
       />
 
   <TextView
@@ -19,7 +19,8 @@
       android:layout_width="wrap_content"
       android:layout_marginTop="16dp"
       android:layout_below="@id/weather_image_view"
-      android:textSize="12sp"
+      android:layout_centerHorizontal="true"
+      android:textSize="20sp"
       tools:text="Los Angeles"
       />
 

@@ -1,11 +1,14 @@
 package com.example.willr356.openweather
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
+import java.net.HttpURLConnection.HTTP_OK
 import java.net.MalformedURLException
 import java.net.URL
 
@@ -13,8 +16,9 @@ object ApiManager {
    private const val TAG = "ApiManager"
    private const val API_KEY = "19f3120e16de2d5fa436c6b17b4a388f"
    private const val weatherUrl = "https://api.openweathermap.org/data/2.5/weather"
+   private const val imageUrl = "https://openweathermap.org/img/w/"
 
-  fun requestWeather(city: String) {
+  fun requestWeather(city: String): Weather? {
     val url = URL("$weatherUrl?q=${city}&APPID=$API_KEY")
     val connection = url.openConnection() as HttpURLConnection
     val sb = StringBuilder()
@@ -22,7 +26,7 @@ object ApiManager {
     try {
       connection.connect()
 
-      if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+      if (connection.responseCode == HTTP_OK) {
         val inputStream = connection.inputStream
         val bufferedReader = BufferedReader(InputStreamReader(inputStream))
 
@@ -37,6 +41,7 @@ object ApiManager {
         val jsonObject = JSONObject(sb.toString())
         val weather = Weather(jsonObject)
         WeatherRepository.saveWeather(weather)
+        return weather
       }
     } catch (me: MalformedURLException) {
       Log.d(TAG, "Malformed URL")
@@ -45,5 +50,27 @@ object ApiManager {
     } finally {
       connection.disconnect()
     }
+
+    return null
+  }
+
+  fun requestImage(iconString: String): Bitmap? {
+    val url = URL("$imageUrl$iconString.png")
+    val connection = url.openConnection() as HttpURLConnection
+
+    try {
+      connection.connect()
+
+      if (connection.responseCode == HTTP_OK) {
+        val inputStream = connection.inputStream
+        return BitmapFactory.decodeStream(inputStream)
+      }
+    } catch (ioe: IOException) {
+
+    } finally {
+      connection.inputStream.close()
+      connection.disconnect()
+    }
+    return null
   }
 }
