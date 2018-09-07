@@ -4,6 +4,8 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.example.willr356.openweather.model.WeatherModel
 import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
@@ -22,6 +24,7 @@ object ApiManager {
         .url(url)
         .build()
 
+    //Needs to be called on background thread
     val response = httpClient.newCall(request).execute()
 
     if (response.code() != 200) {
