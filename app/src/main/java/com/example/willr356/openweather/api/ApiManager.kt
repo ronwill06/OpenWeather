@@ -5,8 +5,10 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import com.example.willr356.openweather.WeatherRepository
 import com.example.willr356.openweather.model.WeatherModel
+import io.reactivex.Single
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.IOException
@@ -15,6 +17,7 @@ import java.net.HttpURLConnection
 import java.net.HttpURLConnection.HTTP_OK
 import java.net.MalformedURLException
 import java.net.URL
+import java.util.jar.JarOutputStream
 
 object ApiManager {
    private const val TAG = "ApiManager"
@@ -22,7 +25,7 @@ object ApiManager {
    private const val weatherUrl = "https://api.openweathermap.org/data/2.5/weather"
    private const val imageUrl = "https://openweathermap.org/img/w/"
 
-  fun requestWeather(city: String): WeatherModel? {
+  fun requestWeather(city: String): Single<WeatherModel> {
     val url = URL("$weatherUrl?q=${city}&APPID=$API_KEY")
     val httpClient = OkHttpClient()
     val request = Request.Builder()
@@ -30,38 +33,16 @@ object ApiManager {
         .build()
 
     val response = httpClient.newCall(request).execute()
-    val connection = url.openConnection() as HttpURLConnection
-    val sb = StringBuilder()
 
-    try {
-      connection.connect()
-
-      if (connection.responseCode == HTTP_OK) {
-        val inputStream = connection.inputStream
-        val bufferedReader = BufferedReader(InputStreamReader(inputStream))
-
-        var line = bufferedReader.readLine()
-        while (line != null) {
-          sb.append(line).append("\n")
-          line = bufferedReader.readLine()
-        }
-        inputStream.close()
-        bufferedReader.close()
-
-        val jsonObject = JSONObject(sb.toString())
-        val weather = WeatherModel(jsonObject)
-        WeatherRepository.saveWeather(weather)
-        return weather
-      }
-    } catch (me: MalformedURLException) {
-      Log.d(TAG, "Malformed URL")
-    } catch (ioe: IOException) {
-      Log.d(TAG, "IO Exception ${ioe.localizedMessage}")
-    } finally {
-      connection.disconnect()
+    if (response.code() != 200) {
+      return Single.error(Throwable("Network Exception"))
     }
 
-    return null
+    val json = response.body()?.string()
+    val jsonObject = JSONObject(json)
+    val weather = WeatherModel(jsonObject)
+
+    return Single.just(weather)
   }
 
   fun requestImage(iconString: String): Bitmap? {
