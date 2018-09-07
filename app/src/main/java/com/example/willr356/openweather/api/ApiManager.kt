@@ -1,8 +1,12 @@
-package com.example.willr356.openweather
+package com.example.willr356.openweather.api
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import com.example.willr356.openweather.WeatherRepository
+import com.example.willr356.openweather.model.WeatherModel
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.IOException
@@ -18,8 +22,14 @@ object ApiManager {
    private const val weatherUrl = "https://api.openweathermap.org/data/2.5/weather"
    private const val imageUrl = "https://openweathermap.org/img/w/"
 
-  fun requestWeather(city: String): Weather? {
+  fun requestWeather(city: String): WeatherModel? {
     val url = URL("$weatherUrl?q=${city}&APPID=$API_KEY")
+    val httpClient = OkHttpClient()
+    val request = Request.Builder()
+        .url(url)
+        .build()
+
+    val response = httpClient.newCall(request).execute()
     val connection = url.openConnection() as HttpURLConnection
     val sb = StringBuilder()
 
@@ -39,7 +49,7 @@ object ApiManager {
         bufferedReader.close()
 
         val jsonObject = JSONObject(sb.toString())
-        val weather = Weather(jsonObject)
+        val weather = WeatherModel(jsonObject)
         WeatherRepository.saveWeather(weather)
         return weather
       }

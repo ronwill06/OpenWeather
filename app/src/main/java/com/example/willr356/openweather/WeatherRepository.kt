@@ -1,14 +1,16 @@
 package com.example.willr356.openweather
 
+import com.example.willr356.openweather.model.WeatherModel
+
 object WeatherRepository {
 
-  private var weather: Weather? = null
+  private var weather: WeatherModel? = null
 
-  fun saveWeather(currentWeather: Weather) {
+  fun saveWeather(currentWeather: WeatherModel) {
     weather = currentWeather
   }
 
-  fun getWeather(): Weather? {
+  fun getWeather(): WeatherModel? {
     return weather
   }
 
