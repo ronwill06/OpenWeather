@@ -2,22 +2,12 @@ package com.example.willr356.openweather.api
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
-import com.example.willr356.openweather.WeatherRepository
 import com.example.willr356.openweather.model.WeatherModel
 import io.reactivex.Single
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Response
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.HttpURLConnection.HTTP_OK
-import java.net.MalformedURLException
 import java.net.URL
-import java.util.jar.JarOutputStream
 
 object ApiManager {
    private const val TAG = "ApiManager"
@@ -45,23 +35,21 @@ object ApiManager {
     return Single.just(weather)
   }
 
-  fun requestImage(iconString: String): Bitmap? {
+  fun requestImage(iconString: String): Single<Bitmap?> {
     val url = URL("$imageUrl$iconString.png")
-    val connection = url.openConnection() as HttpURLConnection
+    val httpClient = OkHttpClient()
+    val request = Request.Builder()
+        .url(url)
+        .build()
 
-    try {
-      connection.connect()
+    val response = httpClient.newCall(request).execute()
 
-      if (connection.responseCode == HTTP_OK) {
-        val inputStream = connection.inputStream
-        return BitmapFactory.decodeStream(inputStream)
-      }
-    } catch (ioe: IOException) {
-
-    } finally {
-      connection.inputStream.close()
-      connection.disconnect()
+    if (response.code() != 200) {
+      return Single.error(Throwable("Network Exception"))
     }
-    return null
+
+    val bytes = response.body()?.byteStream()
+    val bitmap = BitmapFactory.decodeStream(bytes)
+    return Single.just(bitmap)
   }
 }
